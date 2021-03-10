@@ -1,0 +1,2 @@
+# Ignore the package directory, which is where dependencies are installed.
+lambda/package/
