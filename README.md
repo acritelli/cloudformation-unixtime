@@ -9,8 +9,8 @@ This repository presents a simple example of developing a Python Lambda function
 The CloudFormation template deploys a Lambda function to implement a Custom Resource (`UnixTime`). The code for this function must be located in S3. To deploy to S3 from a terminal:
 
 ```
-# Clone the repository, which contains the zip archive. If you are interested in building the .zip manually, 
-# instructions are included in the "Build" section of the README
+# Clone the repository, which contains the zip archive. If you are interested in building the .zip
+# manually, instructions are included in the "Build" section of the README
 git clone git@github.com:acritelli/cloudformation-unixtime.git
 cd cloudformation-unixtime
 
@@ -51,7 +51,7 @@ aws cloudformation describe-stacks --stack-name unixtime-test | jq .Stacks[0].Ou
 ]
 ```
 
-Finally, test an update of the stack (and optionally repeat the previous `describe-stacks` to see the updated Output):
+Finally, test an update of the stack with a different value for the `State` parameter (and optionally repeat the previous `describe-stacks` to see the updated Output):
 
 ```
 aws cloudformation update-stack --stack-name unixtime-test --template-body file://cloudformation/unixtime.yaml --capabilities CAPABILITY_IAM --parameters ParameterKey=State,ParameterValue=Zurich
@@ -66,7 +66,7 @@ There are two components to making this custom resource work, each described in 
 
 ## Lambda function
 
-The Lambda Function receives requests per the [CloudFormation Custom Resource request definition](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-requests.html). It looks for a `State` key in the `ResourceProperties` part of the request. It then reaches out to the [WorldTimeAPI](https://worldtimeapi.org/) to obtain a time object for the given European state. Assuming that a time is returned from the API, this is then returned to the custom resource for further use inside the stack.
+The Lambda Function receives requests per the [CloudFormation Custom Resource request definition](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-requests.html). It looks for a `State` key in the `ResourceProperties` part of the request. It then reaches out to the [WorldTimeAPI](https://worldtimeapi.org/) to obtain a time object for the given European state. Assuming that a time is returned from the API, this is then returned to the Custom Resource for further use inside the stack.
 
 The function makes use of the [CloudFormation Helper Python library](https://github.com/aws-cloudformation/custom-resource-helper) to manage some of the specifics of dealing with CloudFormation requests, such as sending the response to the Presigned S3 URL. The helper library also handles bubbling up exceptions to CloudFormation, as can be seen in the custom exception messages that are listed throughout the code.
 
