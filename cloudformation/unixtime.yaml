@@ -1,7 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: ---
-# Metadata: 
-
+Description: A simple CloudFormation template to demonstrate the use of a Custom Resource that interacts with a Lambda Function
+Metadata:
+  Author: Anthony Critelli (critellia@gmail.com)
+  Repository: https://github.com/acritelli/cloudformation-unixtime
 Parameters:
   UnixTimeLambdaS3Bucket:
     Type: String
@@ -17,7 +18,6 @@ Parameters:
     Type: String
     Default: Rome
     Description: Enter a European State or Province to obtain the current unixtime in that location. 
-
 Resources:
   # Below based on recommended policy from https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/walkthrough-custom-resources-lambda-lookup-amiids.html
   # This is also the default policy that is created when you deploy a Lambda function
@@ -62,7 +62,6 @@ Resources:
     Properties:
       ServiceToken: !GetAtt UnixTimeLambdaFunction.Arn
       State: !Ref State
-
 Outputs:
   UnixTime:
     Description: The time retrieved from the UnixTime lookup service
