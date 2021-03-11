@@ -38,7 +38,7 @@ Then, create the Stack. Notice that the parameters passed specifies the previous
 aws cloudformation create-stack --stack-name unixtime-test --template-body file://cloudformation/unixtime.yaml --capabilities CAPABILITY_IAM --parameters ParameterKey=UnixTimeLambdaS3Bucket,ParameterValue=acritelli-unixtime-function ParameterKey=UnixTimeLambdaS3Key,ParameterValue=function.zip ParameterKey=State,ParameterValue=Rome
 ```
 
-Confirm that the `UnixTime` Output was populated by the Custom Resource (omit the `jq` command if you don't have it installed):
+Wait a few seconds for the Stack to deploy. Confirm that the `UnixTime` Output was populated by the Custom Resource (omit the `jq` command if you don't have it installed):
 
 ```
 aws cloudformation describe-stacks --stack-name unixtime-test | jq .Stacks[0].Outputs
