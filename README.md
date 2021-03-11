@@ -96,6 +96,8 @@ The Template provides a single output:
 | ----------- | ----------------------------------------------------------------- |
 | UnixTime    | The `unixtime` from the WorldTimeAPI for the given European State |
 
+This output is exported as `${AWS::StackName}-UnixTime`
+
 
 # Build Instructions
 
