@@ -9,7 +9,7 @@ helper = crhelper.CfnResource()
 def get_unix_time(event, _):
 
   # Attempt to make a request of the World Time API, bubbling up exceptions as needed
-  # The crhelper 
+  # The crhelper will catch the exceptions and bubble up the message to CloudFormation
   try:
     request = requests.get(f"https://worldtimeapi.org/api/timezone/Europe/{event['ResourceProperties']['State']}.json")
   except requests.exceptions.RequestException as e:
