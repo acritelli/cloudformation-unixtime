@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ---
+# Metadata: 
+
+Parameters:
+  UnixTimeLambdaS3Bucket:
+    Type: String
+    Default: acritelli-unixtime-function
+    Description: Enter a bucket where the code (in .zip format) for the Unix Time Lambda function is located
+
+  UnixTimeLambdaS3Key:
+    Type: String
+    Default: function.zip
+    Description: Enter an S3 key where the code (in .zip format) for the Unix Time Lambda function is located
+
+  State:
+    Type: String
+    Default: Rome
+    Description: Enter a European State or Province to obtain the current unixtime in that location. 
+
+Resources:
+  # Below based on recommended policy from https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/walkthrough-custom-resources-lambda-lookup-amiids.html
+  # This is also the default policy that is created when you deploy a Lambda function
+  UnixTimeLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: root
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+
+  UnixTimeLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref UnixTimeLambdaS3Bucket
+        S3Key: !Ref UnixTimeLambdaS3Key
+      Runtime: python3.8
+      Handler: lambda_function.lambda_handler
+      Timeout: 10
+      Role: !GetAtt UnixTimeLambdaExecutionRole.Arn
+
+  UnixTime:
+    Type: Custom::UnixTime
+    Properties:
+      ServiceToken: !GetAtt UnixTimeLambdaFunction.Arn
+      State: !Ref State
+
+Outputs:
+  UnixTime:
+    Description: The time retrieved from the UnixTime lookup service
+    Value: !GetAtt UnixTime.Unixtime
