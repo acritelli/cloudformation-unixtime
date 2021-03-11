@@ -32,13 +32,13 @@ git clone acritelli/cloudformation-unixtime.git
 cd cloudformation-unixtime
 ```
 
-Then, create the stack. Notice that the parameters passed specifies the previously created  S3 Bucket and Key, along with a state (`Rome`) to obtain the `unixtime` for.
+Then, create the Stack. Notice that the parameters passed specifies the previously created  S3 Bucket and Key, along with a state (`Rome`) to obtain the `unixtime` for.
 
 ```
 aws cloudformation create-stack --stack-name unixtime-test --template-body file://cloudformation/unixtime.yaml --capabilities CAPABILITY_IAM --parameters ParameterKey=UnixTimeLambdaS3Bucket,ParameterValue=acritelli-unixtime-function ParameterKey=UnixTimeLambdaS3Key,ParameterValue=function.zip ParameterKey=State,ParameterValue=Rome
 ```
 
-Confirm that the `UnixTime` output was populated by the Custom Resource (omit the `jq` command if you don't have it installed):
+Confirm that the `UnixTime` Output was populated by the Custom Resource (omit the `jq` command if you don't have it installed):
 
 ```
 aws cloudformation describe-stacks --stack-name unixtime-test | jq .Stacks[0].Outputs
@@ -51,7 +51,7 @@ aws cloudformation describe-stacks --stack-name unixtime-test | jq .Stacks[0].Ou
 ]
 ```
 
-Finally, test an update of the stack with a different value for the `State` parameter (and optionally repeat the previous `describe-stacks` to see the updated Output):
+Finally, test an update of the Stack with a different value for the `State` parameter (and optionally repeat the previous `describe-stacks` to see the updated Output):
 
 ```
 aws cloudformation update-stack --stack-name unixtime-test --template-body file://cloudformation/unixtime.yaml --capabilities CAPABILITY_IAM --parameters ParameterKey=State,ParameterValue=Zurich
@@ -68,13 +68,13 @@ There are two components to making this custom resource work, each described in 
 
 The Lambda Function receives requests per the [CloudFormation Custom Resource request definition](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-requests.html). It looks for a `State` key in the `ResourceProperties` part of the request. It then reaches out to the [WorldTimeAPI](https://worldtimeapi.org/) to obtain a time object for the given European state. Assuming that a time is returned from the API, this is then returned to the Custom Resource for further use inside the stack.
 
-The function makes use of the [CloudFormation Helper Python library](https://github.com/aws-cloudformation/custom-resource-helper) to manage some of the specifics of dealing with CloudFormation requests, such as sending the response to the Presigned S3 URL. The helper library also handles bubbling up exceptions to CloudFormation, as can be seen in the custom exception messages that are listed throughout the code.
+The Function makes use of the [CloudFormation Helper Python library](https://github.com/aws-cloudformation/custom-resource-helper) to manage some of the specifics of dealing with CloudFormation requests, such as sending the response to the Presigned S3 URL. The helper library also handles bubbling up exceptions to CloudFormation, as can be seen in the custom exception messages that are listed throughout the code.
 
-The function is designed to run in a Lambda Python 3.8 runtime.
+The Function is designed to run in a Lambda Python 3.8 runtime.
 
 ## CloudFormation Template
 
-The `unixtime.yaml` CloudFormation template provides an example of deploying and using the `UnixTime` Custom Resource. The template manages three resources:
+The `unixtime.yaml` CloudFormation Template provides an example of deploying and using the `UnixTime` Custom Resource. The Template manages three resources:
 
 |        Resource Name        |                                                              Description                                                              |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
@@ -82,7 +82,7 @@ The `unixtime.yaml` CloudFormation template provides an example of deploying and
 | UnixTimeLambdaFunction      | An instantiation of the lambda function necessary to service requests for the UnixTime Custom Resource                                |
 | UnixTime                    | The UnixTime custom resource, implemented by the Lambda function                                                                      |
 
-The template also takes three parameters:
+The Template also takes three parameters:
 
 |     Parameter Name     |                             Description                             |
 | ---------------------- | ------------------------------------------------------------------- |
@@ -90,7 +90,7 @@ The template also takes three parameters:
 | UnixTimeLambdaS3Key    | The S3 key location for the UnixTime Lambda code, as a .zip file    |
 | State                  | A European state to query the WorldTimeAPI for                      |
 
-The template provides a single output:
+The Template provides a single output:
 
 | Output Name |                            Description                            |
 | ----------- | ----------------------------------------------------------------- |
@@ -132,3 +132,9 @@ The links below outline some useful resources that I used while determining the 
 
 
 # Potential Areas of Improvement
+
+There are ways that this solution could theoretically be improved, if it were going into production.
+
+The Lambda function could be split into its own Template. This could then be deployed as a single Stack, which would [export](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-exports.html) the ARN of the Lambda Function. Other Stacks could then consume this ARN and they could all use the same Lambda Function, without it being duplicated in each deployed Stack.
+
+There might be some small efficiency gains within the Lambda Function itself, though I suspect this would result in diminishing returns. For example, the `requests` and `crhelper` libraries could be eliminated in favor of writing code with the built-in [urllib](https://docs.python.org/3/library/urllib.request.html#module-urllib.request) library.
