@@ -9,20 +9,23 @@ This repository presents a simple example of developing a Python Lambda function
 The CloudFormation template deploys a Lambda function to implement a Custom Resource (`UnixTime`). The code for this function must be located in S3. To deploy to S3 from a terminal:
 
 ```
-# Obtain the current ZIP file. If you are interested in building the .zip manually, instructions are included in the "Build" section of the README
+# Clone the repository, which contains the zip archive. If you are interested in building the .zip manually, 
+# instructions are included in the "Build" section of the README
+git clone git@github.com:acritelli/cloudformation-unixtime.git
+cd cloudformation-unixtime
 
 # Create an S3 bucket
 aws s3 mb s3://acritelli-unixtime-function
 
 # Place the zip file into the bucket
-aws s3 cp function.zip s3://acritelli-unixtime-function/function.zip
+aws s3 cp lambda/function.zip s3://acritelli-unixtime-function/function.zip
 ```
 
 ## Deploying a new stack from the Cloud Formation Template
 
 The CloudFormation template can be used to deploy a complete stack with the Lambda function and a Custom Resource that interacts with the function. The example below demonstrates this process from the CLI, but the UI works just as well.
 
-First, clone the repository and change into the repo directory:
+First, clone the repository and change into the repo directory (if you haven't already):
 
 ```
 git clone acritelli/cloudformation-unixtime.git
@@ -32,7 +35,7 @@ cd cloudformation-unixtime
 Then, create the stack. Notice that the parameters passed specifies the previously created  S3 Bucket and Key, along with a state (`Rome`) to obtain the `unixtime` for.
 
 ```
-aws cloudformation create-stack --stack-name unixtime-test --template-body file://cloudformation/cloudformation.yaml --capabilities CAPABILITY_IAM --parameters ParameterKey=UnixTimeLambdaS3Bucket,ParameterValue=acritelli-unixtime-function ParameterKey=UnixTimeLambdaS3Key,ParameterValue=function.zip ParameterKey=State,ParameterValue=Rome
+aws cloudformation create-stack --stack-name unixtime-test --template-body file://cloudformation/unixtime.yaml --capabilities CAPABILITY_IAM --parameters ParameterKey=UnixTimeLambdaS3Bucket,ParameterValue=acritelli-unixtime-function ParameterKey=UnixTimeLambdaS3Key,ParameterValue=function.zip ParameterKey=State,ParameterValue=Rome
 ```
 
 Confirm that the `UnixTime` output was populated by the Custom Resource (omit the `jq` command if you don't have it installed):
@@ -51,7 +54,7 @@ aws cloudformation describe-stacks --stack-name unixtime-test | jq .Stacks[0].Ou
 Finally, test an update of the stack (and optionally repeat the previous `describe-stacks` to see the updated Output):
 
 ```
-aws cloudformation update-stack --stack-name unixtime-test --template-body file://cloudformation/cloudformation.yaml --capabilities CAPABILITY_IAM --parameters ParameterKey=State,ParameterValue=Zurich
+aws cloudformation update-stack --stack-name unixtime-test --template-body file://cloudformation/unixtime.yaml --capabilities CAPABILITY_IAM --parameters ParameterKey=State,ParameterValue=Zurich
 ```
 
 # Explanation
@@ -100,7 +103,7 @@ The usage instructions assume that you use the prebuilt zip archive for the Lamb
 
 ```
 # Clone the repository and change into the directory
-git clone acritelli/cloudformation-unixtime.git
+git clone git@github.com:acritelli/cloudformation-unixtime.git
 cd cloudformation-unixtime
 
 # Ensure that you have Python 3.8 installed
